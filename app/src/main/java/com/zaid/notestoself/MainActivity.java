@@ -42,20 +42,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
-        String title = getIntent().getStringExtra("title");
-
-
-
-
-
-        final DBHelper helper = new DBHelper(this);
-        final SQLiteDatabase db = helper.database;
-        final Cursor cur = db.rawQuery("select title, note from Notes WHERE title = \"" +title+ "\";", null);
-
-
-
-
         editText = findViewById(R.id.editNote);
         editTitle = findViewById(R.id.editTitle);
         submitButton = findViewById(R.id.sybmitButton);
@@ -64,13 +50,15 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
+        //if we are opening a pre-saved note to edit, load the note and title into MainActivity()
+        String title = getIntent().getStringExtra("title");
+        final DBHelper helper = new DBHelper(this);
+        final SQLiteDatabase db = DBHelper.database;
+        final Cursor cur = db.rawQuery("select title, note from Notes WHERE title = \"" +title+ "\";", null);
         while(cur.moveToNext()){
             editText.setText(cur.getString(1));
             editTitle.setText(cur.getString(0));
         }
-
-
         //if we are opening a pre-saved Note, it wouldn't allow to change title
         if (!editTitle.getText().toString().equals("")){
             editTitle.setInputType(InputType.TYPE_NULL);
@@ -78,12 +66,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
+        //to Customize the KeyBoard type
+        //text should automatically move to next line.
+        //Remove the 'Carriage Return' Button and place a 'Done' Button instead
         editText.setRawInputType(InputType.TYPE_CLASS_TEXT);
         editText.setImeActionLabel("DONE",EditorInfo.IME_ACTION_DONE);              //Set Return Carriage as "DONE"
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
@@ -95,14 +83,6 @@ public class MainActivity extends AppCompatActivity {
                         editText.clearFocus();
                         InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
                         inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-                    }
-
-                    else if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                        // Capture soft enters in other singleLine EditTexts
-                    } else if (actionId == EditorInfo.IME_ACTION_GO) {
-                    } else {
-                        // Let the system handle all other null KeyEvents
-                        return false;
                     }
                 }
                 else if (actionId == EditorInfo.IME_NULL) {
@@ -132,18 +112,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String note = editText.getText().toString();
                 String title = editTitle.getText().toString();
+
+                //Only save the note when both title and note are not empty
                 if (!note.equals("") && !title.equals("")){
                     Cursor curs = db.rawQuery("select title from Notes WHERE title = \"" +title+ "\";", null);
-                    if(!curs.moveToNext()){
+                    if(!curs.moveToNext()){                 //if note with the same title does not exists, create a new Note
                         helper.addNote(title, note, db);
                         Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_SHORT).show();
                     }
-                    else{
+                    else{                                   //if not with same title exists, update that Note
                         helper.updateNote(title, note, db);
                         Toast.makeText(MainActivity.this, "Updated", Toast.LENGTH_SHORT).show();
                     }
+                    curs.close();
                     goBack();
                 }
+                //if user press save Button with empty fields set the colour of hint of respective field to red
                 else{
                     if (title.equals("")){
                         editTitle.setHintTextColor(ColorStateList.valueOf(RED));
@@ -152,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
                         editText.setHintTextColor(ColorStateList.valueOf(RED));
                     }
                 }
-
-
             }
         });
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        cur.close();
     }
 
     private void goBack() {

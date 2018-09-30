@@ -26,54 +26,53 @@ public class FirstActivity extends AppCompatActivity {
     private SQLiteDatabase database;
     private boolean doubleBackToExitPressedOnce;
 
+
+    //implementing 'double press back to exit application' feature
     @Override
     public void onBackPressed() {
-
-
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
         }
-
         this.doubleBackToExitPressedOnce = true;
         Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
 
         new Handler().postDelayed(new Runnable() {
-
             @Override
             public void run() {
                 doubleBackToExitPressedOnce=false;
             }
         }, 2000);
-
-
     }
 
-    //Cursor cursor;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
         imageView = findViewById(R.id.firstImage);
         doubleBackToExitPressedOnce = false;
-        DBHelper dbHelper = new DBHelper(this);
+        DBHelper helper = new DBHelper(this);
         database = DBHelper.database;
+
+
         Cursor cursor = database.rawQuery("select title from Notes;", null);
-        prepare(cursor);
-        //arrayList.add(new Student(cur.getStrimg(2),,));
+        prepare(cursor);            //getting all titles into a List
         recyclerView = findViewById(R.id.myRecyclerView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         MyRecyclerAdapter adapter = new MyRecyclerAdapter(notesList,this);
         recyclerView.setAdapter(adapter);
 
+        //if there is at least one Note, hide the '+' sign from the middle of the screen. otherwise show a plus icon to add notes.
         if(adapter.getItemCount()!=0){
             imageView.setVisibility(View.INVISIBLE);
         }
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callEditScreen();
+                callEditScreen();               //add a note
             }
         });
     }
@@ -104,7 +103,7 @@ public class FirstActivity extends AppCompatActivity {
 
     void prepare(Cursor cursor){
         while(cursor.moveToNext()){
-            notesList.add(new Notes(cursor.getString(0).toString()));
+            notesList.add(new Notes(cursor.getString(0)));
         }
 
     }

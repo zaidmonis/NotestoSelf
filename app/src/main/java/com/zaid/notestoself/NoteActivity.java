@@ -19,8 +19,8 @@ public class NoteActivity extends AppCompatActivity {
     TextView noteText;
     private SQLiteDatabase db;
     private DBHelper helper;
-    String title;
 
+    //overridig onbackpressed() to perform animation and opening desired activity instead of previous activity
     @Override
     public void onBackPressed() {
         ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(this, R.anim.slide_right_in, R.anim.slide_right_out);
@@ -33,27 +33,27 @@ public class NoteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         String title = getIntent().getStringExtra("title");
-
+        this.setTitle(title);                                       //Setting the Title to Activity Title(ActionBAr)
         noteText = findViewById(R.id.noteText);
 
 
         helper = new DBHelper(this);
-        db = helper.database;
+        db = DBHelper.database;
 
 
 
-        Cursor cur = db.rawQuery("select title, note from Notes WHERE title = \"" +title+ "\";", null);
+        Cursor cur = db.rawQuery("select note from Notes WHERE title = \"" +title+ "\";", null);
         while(cur.moveToNext()){
-            noteText.setText(cur.getString(1).toString());
-            this.setTitle(cur.getString(0).toString());
-            title = cur.getString(0).toString();
+            noteText.setText(cur.getString(0));
         }
-        if (title.equals("")) {
+        if (title.equals("")) {      //if title is empty, it means this activity is opened from the MainActivity on clicking back Button, so sending back to main Screen(FirstActivity).
             onBackPressed();
         }
 
+        cur.close();
     }
 
+    //Overriding onCreateOptionsMenu() to inflate ActionBar with menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
