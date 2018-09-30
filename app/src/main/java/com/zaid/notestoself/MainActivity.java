@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     curs.close();
                     goBack();
                 }
+
                 //if user press save Button with empty fields set the colour of hint of respective field to red
                 else{
                     if (title.equals("")){

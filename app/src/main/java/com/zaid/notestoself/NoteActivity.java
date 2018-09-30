@@ -53,6 +53,7 @@ public class NoteActivity extends AppCompatActivity {
         cur.close();
     }
 
+
     //Overriding onCreateOptionsMenu() to inflate ActionBar with menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
